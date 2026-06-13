@@ -36,6 +36,8 @@ It is designed as a prototype that demonstrates:
 - **News collection and sentiment analysis**
 - **Risk analysis with verification and citations**
 - **GraphRAG / contagion analysis**
+- **Interactive relationship graph visualization**
+- **Live watchlist with real-time market metrics**
 - **Session-based chat assistant**
 - **Report-specific retrieval, no cross-report contamination**
 - **React dashboard, reports page, graph page, and chatbot UI**
@@ -54,7 +56,7 @@ It is designed as a prototype that demonstrates:
 - **FAISS** stores chunk embeddings for each report separately.
 - **Supabase/PostgreSQL** stores reports, sessions, messages, and watchlist data.
 - **Groq** powers the final LLM responses.
-- **GraphRAG** builds contagion-style relationships from supply chain, regulation, and geography.
+- **GraphRAG** builds and visualizes company relationships, sector dependencies, macroeconomic risks, and contagion paths.
 
 ---
 
@@ -138,7 +140,7 @@ Even if vector retrieval fails, HiveLogic can still answer using the generated r
 
 **Primary Source**
 
-* GraphRAG relationship store
+* GraphRAG relationship store with interactive graph visualization
 
 **Fallback**
 
@@ -224,6 +226,7 @@ This avoids sending the entire report every time and keeps the conversation isol
 - Vite
 - Axios
 - React Router
+- React Flow
 - CSS
 
 ---
@@ -251,7 +254,7 @@ HIVELOGIC/
 - `api/` — FastAPI routes
 - `db/` — SQLAlchemy models and database setup
 - `rag/` — FAISS ingestion and retrieval
-- `graph/` — GraphRAG / contagion logic
+- `graph/` — GraphRAG relationship generation, contagion analysis, and graph visualization APIs
 - `services/` — helper services for sessions and messages
 
 ### Important frontend folders
@@ -301,7 +304,15 @@ Fields include:
 - `created_at`
 
 ### Watchlist
-Stores tracked tickers.
+
+Stores tracked tickers for monitoring.
+
+The frontend retrieves live market information using yfinance, including:
+
+- Current price
+- Daily percentage change
+- Market capitalization
+- P/E ratio
 
 ---
 
@@ -406,6 +417,26 @@ npm run dev
 
 ---
 
+## GraphRAG Visualization
+
+HiveLogic provides an interactive graph view that visualizes:
+
+- Supply chain dependencies
+- Competitor relationships
+- Revenue dependencies
+- Currency risks
+- Regulatory risks
+- Macroeconomic exposure
+
+Relationships are derived from:
+
+1. Known company relationship datasets
+2. yfinance sector and industry information
+3. Dynamically generated graph relationships
+
+The graph view allows users to explore contagion paths and understand how external entities may impact a company's risk profile.
+
+---
 ## Screenshots
 
 
@@ -424,9 +455,14 @@ npm run dev
 
 ![Chat Page](screenshots/chat-page.png)
 
-### 4) Graph Page
+### 4) Watchlist Page
 
-![Graph Page](screenshots/graph-page.png)
+![Watchlist Page](screenshots/watchlist-page.png)
+
+### 5) GraphRAG & Relationship Visualization
+
+![Graph Page](screenshots/graph-page-1.png)
+![Graph Page](screenshots/graph-page-2.png)
 
 ---
 
