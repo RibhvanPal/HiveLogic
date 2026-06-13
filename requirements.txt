@@ -41,3 +41,6 @@ newsapi-python
 networkx
 
 python-multipart
+
+sec-edgar-downloader
+feedparser
