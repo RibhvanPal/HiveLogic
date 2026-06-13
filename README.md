@@ -433,6 +433,7 @@ Relationships are derived from:
 1. Known company relationship datasets
 2. yfinance sector and industry information
 3. Dynamically generated graph relationships
+4. Interactive React Flow visualization
 
 The graph view allows users to explore contagion paths and understand how external entities may impact a company's risk profile.
 
