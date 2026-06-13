@@ -1,13 +1,13 @@
 import { useState } from "react";
 import API from "../services/api";
-
+import GraphViewer from "../components/GraphViewer";
 export default function Graph() {
   const [ticker, setTicker]       = useState("");
   const [risks, setRisks]         = useState([]);
   const [stats, setStats]         = useState(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [loadingRisks, setLoadingRisks] = useState(false);
-
+  const [graphData, setGraphData] = useState(null);
   const loadStats = async () => {
     setLoadingStats(true);
     try {
@@ -22,10 +22,23 @@ export default function Graph() {
 
   const loadRisks = async () => {
     if (!ticker.trim()) return;
+
     setLoadingRisks(true);
+    setGraphData(null);
+    setRisks([]);
     try {
-      const res = await API.get(`/graph/risks/${ticker.trim()}`);
+      const res = await API.get(
+        `/graph/risks/${ticker.trim()}`
+      );
+
       setRisks(res.data.risks ?? []);
+
+      const graphRes = await API.get(
+        `/graph/subgraph/${ticker.trim()}`
+      );
+
+      setGraphData(graphRes.data);
+
     } catch (err) {
       console.error(err);
     } finally {
@@ -134,7 +147,7 @@ export default function Graph() {
           <p>No contagion risks found for <span style={{ fontFamily: "var(--mono)", color: "var(--text-secondary)" }}>{ticker}</span>.</p>
         </div>
       )}
-
+      
       {!loadingRisks && risks.length > 0 && (
         <div className="reports-table-wrap">
           <table className="risk-table">
@@ -164,6 +177,21 @@ export default function Graph() {
             </tbody>
           </table>
         </div>
+      )}
+      {graphData && (
+        <>
+          <p
+            className="section-label"
+            style={{ marginTop: 30 }}
+          >
+            Relationship Graph
+          </p>
+
+          <GraphViewer
+            nodes={graphData.nodes}
+            edges={graphData.edges}
+          />
+        </>
       )}
 
     </div>

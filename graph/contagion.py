@@ -61,6 +61,8 @@ def find_contagion_risks(ticker: str, depth: int = 1) -> List[Dict]:
                 "supply_chain_risk",
                 "geopolitical_risk",
                 "revenue_dependency",
+                "macro_risk",
+                "cost_risk",
             ]:
                 continue
             risks.append({
@@ -94,6 +96,96 @@ def summarize_contagion(ticker: str, news_text: str = "") -> List[Dict]:
             f"(confidence: {weight:.0%})"
         )
     return risks[:10]
+
+def get_subgraph(
+    ticker: str,
+    depth: int = 1,
+) -> Dict:
+
+    enrich_graph_for_ticker(ticker)
+
+    G = get_graph()
+
+    ticker_upper = ticker.split(".")[0].upper()
+
+    if ticker_upper not in G:
+        return {
+            "nodes": [],
+            "edges": [],
+        }
+
+    nodes = {
+        ticker_upper,
+    }
+
+    edges = []
+
+    frontier = [
+        (ticker_upper, 0),
+    ]
+
+    visited = {
+        ticker_upper,
+    }
+
+    while frontier:
+
+        node, current_depth = frontier.pop(0)
+
+        if current_depth >= depth:
+            continue
+
+        for neighbor in G.successors(node):
+
+            edge_data = G.edges[node, neighbor]
+
+            nodes.add(neighbor)
+
+            edges.append(
+                {
+                    "source": node,
+                    "target": neighbor,
+                    "relation": edge_data.get(
+                        "relation",
+                        "",
+                    ),
+                    "weight": edge_data.get(
+                        "weight",
+                        0,
+                    ),
+                }
+            )
+
+            if neighbor not in visited:
+
+                visited.add(neighbor)
+
+                frontier.append(
+                    (
+                        neighbor,
+                        current_depth + 1,
+                    )
+                )
+
+    node_list = []
+
+    for node in nodes:
+
+        node_list.append(
+            {
+                "id": node,
+                "label": node,
+                "type":
+                    "company"
+                    if node == ticker_upper
+                    else "related",
+            }
+        )
+
+    return {
+        "nodes": node_list,
+        "edges": edges,
+    }
 
 def get_graph_stats() -> Dict:
     G = get_graph()

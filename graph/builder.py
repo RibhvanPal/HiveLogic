@@ -145,7 +145,7 @@ def extract_relationships_from_text(
 
 
 def get_relationships_from_yfinance(ticker: str) -> List[Relationship]:
-    #Build relationships from yfinance company info.
+    #Build relationships from yfinance company info
     relationships = []
     base_ticker = ticker.split(".")[0].upper()
 
@@ -185,6 +185,22 @@ def get_relationships_from_yfinance(ticker: str) -> List[Relationship]:
             "Consumer Discretionary": [
                 ("Consumer_Spending", "revenue_dependency", 0.70),
                 ("Logistics_Costs", "cost_risk", 0.50),
+            ],
+            "Financial Services": [
+                ("Interest_Rates", "macro_risk", 0.75),
+                ("Credit_Risk", "regulatory_risk", 0.65),
+            ],
+            "Healthcare": [
+                ("FDA_Regulations", "regulatory_risk", 0.70),
+                ("Drug_Pricing", "revenue_dependency", 0.60),
+            ],
+            "Industrials": [
+                ("Global_Inflation", "cost_risk", 0.60),
+                ("Supply_Chain_Risk", "supply_chain_risk", 0.65),
+            ],
+            "Consumer Staples": [
+                ("Consumer_Spending", "revenue_dependency", 0.60),
+                ("Commodity_Prices", "commodity_risk", 0.65),
             ],
         }
 

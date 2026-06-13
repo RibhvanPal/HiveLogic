@@ -8,12 +8,21 @@ export default function Watchlist() {
   const [adding, setAdding]   = useState(false);
   const [removing, setRemoving] = useState(null);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+
+    const interval = setInterval(
+      load,
+      60000
+    );
+
+    return () => clearInterval(interval);
+  }, []);
 
   const load = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/watchlist");
+      const res = await API.get("/watchlist/live");
       const raw = res.data ?? [];
       const normalised = raw.map((item) => ({
         ...item,
@@ -59,6 +68,26 @@ export default function Watchlist() {
     if (e.key === "Enter") add();
   };
 
+  const formatMarketCap = (value) => {
+    if (!value) return "-";
+
+    if (value >= 1e12)
+      return `${(value / 1e12).toFixed(2)}T`;
+
+    if (value >= 1e9)
+      return `${(value / 1e9).toFixed(2)}B`;
+
+    if (value >= 1e6)
+      return `${(value / 1e6).toFixed(2)}M`;
+
+    return value.toLocaleString();
+  };
+
+  const formatPrice = (value) => {
+    if (value == null) return "-";
+    return Number(value).toFixed(2);
+  };
+
   return (
     <div className="container">
 
@@ -102,23 +131,64 @@ export default function Watchlist() {
           <table className="reports-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Ticker</th>
-                <th></th>
-              </tr>
+              <th>#</th>
+              <th>Ticker</th>
+              <th>Price</th>
+              <th>Change %</th>
+              <th>Market Cap</th>
+              <th>P/E</th>
+              <th></th>
+            </tr>
             </thead>
             <tbody>
               {items.map((item, idx) => (
                 <tr key={item.id}>
-                  <td className="watchlist-index">{String(idx + 1).padStart(2, "0")}</td>
-                  <td className="reports-ticker">{item.ticker}</td>
+                  <td className="watchlist-index">
+                    {String(idx + 1).padStart(2, "0")}
+                  </td>
+
+                  <td className="reports-ticker">
+                    {item.ticker}
+                  </td>
+
+                  <td>
+                    {formatPrice(item.price)}
+                  </td>
+
+                  <td
+                    style={{
+                      color:
+                        item.change_percent > 0
+                          ? "#16a34a"
+                          : item.change_percent < 0
+                          ? "#dc2626"
+                          : "inherit",
+                    }}
+                  >
+                    {item.change_percent == null
+                      ? "-"
+                      : `${item.change_percent}%`}
+                  </td>
+
+                  <td>
+                    {formatMarketCap(item.market_cap)}
+                  </td>
+
+                  <td>
+                    {item.pe_ratio
+                      ? item.pe_ratio.toFixed(2)
+                      : "-"}
+                  </td>
+
                   <td className="reports-actions">
                     <button
                       className="btn-delete"
                       onClick={() => remove(item)}
                       disabled={removing === (item.ticker || item.id)}
                     >
-                      {removing === (item.ticker || item.id) ? "…" : "Remove"}
+                      {removing === (item.ticker || item.id)
+                        ? "…"
+                        : "Remove"}
                     </button>
                   </td>
                 </tr>

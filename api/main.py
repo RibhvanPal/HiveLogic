@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
+import yfinance as yf
 
 load_dotenv()
 
@@ -318,6 +319,71 @@ def remove_from_watchlist(ticker: str, db: Session = Depends(get_db)):
     db.commit()
     return {"message": f"{ticker.upper()} removed."}
 
+@app.get("/watchlist/live")
+def get_watchlist_live(db: Session = Depends(get_db)):
+    items = (
+        db.query(Watchlist)
+        .order_by(Watchlist.added_at.desc())
+        .all()
+    )
+
+    result = []
+
+    for item in items:
+        try:
+            stock = yf.Ticker(item.ticker)
+            info = stock.info
+
+            current_price = (
+                info.get("currentPrice")
+                or info.get("regularMarketPrice")
+            )
+
+            previous_close = info.get("previousClose")
+
+            change_percent = None
+
+            if (
+                current_price is not None
+                and previous_close
+                and previous_close != 0
+            ):
+                change_percent = round(
+                    ((current_price - previous_close)
+                     / previous_close)
+                    * 100,
+                    2,
+                )
+
+            result.append(
+                {
+                    "id": item.id,
+                    "ticker": item.ticker,
+                    "price": current_price,
+                    "change_percent": change_percent,
+                    "market_cap": info.get("marketCap"),
+                    "pe_ratio": info.get("trailingPE"),
+                }
+            )
+
+        except Exception as e:
+            print(
+                f"[Watchlist] Error fetching "
+                f"{item.ticker}: {e}"
+            )
+
+            result.append(
+                {
+                    "id": item.id,
+                    "ticker": item.ticker,
+                    "price": None,
+                    "change_percent": None,
+                    "market_cap": None,
+                    "pe_ratio": None,
+                }
+            )
+
+    return result
 
 #Graph Stats
 @app.get("/graph/stats")
@@ -339,6 +405,15 @@ def get_risks(ticker: str):
     except Exception as e:
         raise HTTPException(500, str(e))
 
+@app.get("/graph/subgraph/{ticker}")
+def get_subgraph(ticker: str):
+    try:
+        from graph.contagion import get_subgraph
+
+        return get_subgraph(ticker)
+
+    except Exception as e:
+        raise HTTPException(500, str(e))
 
 if __name__ == "__main__":
     import uvicorn
