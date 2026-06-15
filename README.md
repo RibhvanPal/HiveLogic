@@ -46,6 +46,14 @@ It is designed as a prototype that demonstrates:
 
 ## Architecture
 
+### System Overview
+![System Overview](screenshots/System-overview.png)
+
+### Multiagent System
+![Multiagent System](screenshots/Multiagent-system.png)
+
+### RAG Flow
+![RAG Flow](screenshots/rag-flow.png)
 
 
 ### How the architecture works
